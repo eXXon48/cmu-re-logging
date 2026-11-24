@@ -1,0 +1,71 @@
+{
+  "formatVersion": 1,
+  "name": "cmu-re-logging",
+  "version": "0.0.0",
+  "author": "CMU-Revised",
+  "targetCMU": "74.00.324A",
+  "category": "System mods",
+  "description": "Sets the log level of the JCI services (Info, Warn or Error). Warn writes about a tenth of the boot log lines of Info, so boot is faster. Takes effect after a restart. Uninstall and restart to get the stock behaviour back.",
+  "minDaemon": "0.6.0",
+  "depends": "cmu-re-store (>= 0.13.4)",
+  "conflicts": "",
+  "restart": true,
+  "config": {
+    "fields": [
+      {
+        "key": "level",
+        "type": "select",
+        "label": "Log level",
+        "default": "Warn",
+        "options": [
+          {
+            "label": "Info (stock)",
+            "value": "Info"
+          },
+          {
+            "label": "Warn",
+            "value": "Warn"
+          },
+          {
+            "label": "Error",
+            "value": "Error"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "template": "settings.txt.tpl",
+        "path": "settings.txt"
+      }
+    ],
+    "apply": "reboot"
+  },
+  "files": [
+    {
+      "live": "bin/log-level.sh",
+      "payload": "payload/bin/log-level.sh",
+      "mode": "0755",
+      "owner": "1000:1000",
+      "type": "new",
+      "apply": "whole-file"
+    },
+    {
+      "live": "settings.txt.tpl",
+      "payload": "payload/settings.txt.tpl",
+      "mode": "0644",
+      "owner": "1000:1000",
+      "type": "new",
+      "apply": "whole-file"
+    },
+    {
+      "live": "/jci/scripts/start_normal_mode.sh",
+      "payload": "payload/start_normal_mode.sh.diff",
+      "mode": "0775",
+      "owner": "1000:1000",
+      "type": "modify",
+      "apply": "3way",
+      "reason": "boot hook after the tripwire line: bind-mounts the package's log settings over the stock /config/common/log/settings.txt (nothing on the rootfs changes) before the service manager starts any JCI service"
+    }
+  ]
+}
